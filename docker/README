@@ -1,0 +1,63 @@
+STEPS:
+
+1)  check for existing docker machines (and create docker-db if necessary)
+
+    docker-machine ls
+
+    docker-machine create --driver virtualbox  docker-db
+ 	docker-machine create -d virtualbox --virtualbox-memory 4096 docker-db 
+
+2) pull the docker image
+    docker pull jayne/db-migrations
+
+3) build the container
+    docker run --name testdbcontainer -e MYSQL_ROOT_PASSWORD=password -p "3306:3306" -d jayne/db-migrations
+
+4) to check logs if db is successfully created
+    docker logs testdbcontainer
+
+5) login with mysql client to check out database
+    host: result of -> docker-machine ip docker-db 
+    port: 3306
+    user: root
+    password: password
+
+NOTE: to build the docker image from a docker file
+docker build -t jayne/db-migrations:1.0 .
+docker build -t jayne/db-migrations .
+
+
+
+
+
+
+
+RANDOM NOTES
+:: to delete all unused docker images
+docker images -q |xargs docker rmi
+
+:: to see all existing processes
+docker ps
+
+:: to delete all existing processes 
+docker rm -f $(docker ps -a -q)
+
+:: to build an image from a dockerfile
+docker build -t jayne/db-migrations:1.0 .
+docker build -t jayne/db-migrations .
+
+:: to build the container
+docker run --name testdbcontainer -e MYSQL_ROOT_PASSWORD=password -p "3306:3306" -d jayne/db-migrations
+
+::docker logs of the container
+docker logs testdbcontainer  
+
+:: to log onto the container
+docker exec -it testdbcontainer bash
+
+:: create a client to connect to the db
+docker run -it --link testdbcontainer:mysql --rm jayne/db-migrations sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
+
+:: to push image ::
+docker push jayne/db-migrations
+
